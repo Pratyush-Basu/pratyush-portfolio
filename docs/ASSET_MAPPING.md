@@ -10,6 +10,7 @@ Source folder: `person-video-img/` (Google Flow / Veo frame export).
 | `person-video-img/ezgif-frame-001.png` … `ezgif-frame-238.png` | PNG sequence | 238 | 1280×720 | 16:9 (1.778) | ~155.5 MB total |
 | Videos (mp4/webm/mov) | — | 0 found | — | — | — |
 | WebP / JPG originals | — | 0 found | — | — | — |
+| `public/person-video-img/ezgif-frame-001.webp` … `238.webp` | WebP copies (originals untouched) | 238 | 1280×720 | 16:9 | ~8.0 MB total |
 
 ## Sequence analysis
 
@@ -38,7 +39,7 @@ Optional (if encoded later):
 
 | Section | Asset(s) | Usage |
 |---|---|---|
-| **Hero** | `hero-still-80.png` (+ sequence via canvas/video when available) | Main anti-gravity portrait identity |
+| **Hero / persistent background** | `sequence-webp/ezgif-frame-001.webp` … `238.webp` | Scroll-driven Canvas sequence (PNG originals preserved in `person-video-img/`) |
 | **Hero atmosphere** | Sequence lighting cues + procedural R3F particles/rings | Orbital rings, particles, floating tech cards (code-generated) |
 | **About** | `about-portrait.png` | Side portrait |
 | **Projects** | Placeholder gradient thumbnails until real screenshots are supplied | Project cards |

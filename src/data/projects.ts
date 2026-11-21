@@ -7,6 +7,7 @@ export const projects: Project[] = [
     shortDescription:
       "An intelligent farming platform featuring crop recommendation, fertilizer optimization, plant disease detection, an AI chatbot, weather forecasting, mandi prices and farm expense/profit calculations.",
     category: "Applied AI · Full Stack",
+    thumbnail: "/images/projects/krishi-sahayak.svg",
     technologies: [
       "Python",
       "Flask",
@@ -42,6 +43,7 @@ export const projects: Project[] = [
     shortDescription:
       "A multi-agent AI travel planning application where specialized agents collaborate to research destinations, forecast weather, estimate budgets and generate travel routes.",
     category: "Agentic AI",
+    thumbnail: "/images/projects/multi-agent-travel.svg",
     technologies: [
       "CrewAI",
       "Python",
@@ -76,6 +78,7 @@ export const projects: Project[] = [
     shortDescription:
       "A document intelligence application supporting PDF summarization and conversational interaction with uploaded PDF documents.",
     category: "Generative AI · RAG",
+    thumbnail: "/images/projects/genai-pdf-assistant.svg",
     technologies: ["Python", "Streamlit", "PyMuPDF", "Groq API"],
     details: {
       problem:
@@ -103,6 +106,7 @@ export const projects: Project[] = [
     shortDescription:
       "A machine learning pipeline for customer churn prediction with model evaluation, experiment tracking and model explainability.",
     category: "Machine Learning",
+    thumbnail: "/images/projects/customer-churn.svg",
     technologies: ["Python", "Scikit-learn", "MLflow", "SHAP", "Streamlit"],
     details: {
       problem:
@@ -131,6 +135,7 @@ export const projects: Project[] = [
     shortDescription:
       "A diffusion-based virtual try-on system using CatVTON, with optimizations for lower-VRAM environments.",
     category: "Computer Vision · Generative AI",
+    thumbnail: "/images/projects/virtual-try-on.svg",
     technologies: ["Python", "Diffusion Models", "CatVTON", "Computer Vision"],
     details: {
       problem:
@@ -158,6 +163,7 @@ export const projects: Project[] = [
     shortDescription:
       "An IoT and computer vision-based smart parking system featuring vehicle detection and automatic number plate recognition.",
     category: "IoT · Computer Vision",
+    thumbnail: "/images/projects/smart-parking.svg",
     technologies: [
       "ESP32-CAM",
       "NodeMCU",

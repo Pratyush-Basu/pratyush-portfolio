@@ -8,7 +8,8 @@ export default function Journey() {
   const ref = useGsapReveal<HTMLElement>();
 
   return (
-    <section id="journey" ref={ref} className="scroll-mt-24 py-20 sm:py-28">
+    <section id="journey" ref={ref} className="relative scroll-mt-24 py-20 sm:py-28">
+      <div className="absolute inset-0 -z-[1] bg-[#05070f]/35" aria-hidden />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading
           eyebrow="Journey"

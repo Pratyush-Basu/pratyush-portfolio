@@ -7,6 +7,12 @@ import Journey from "@/components/sections/Journey";
 import BeyondCode from "@/components/sections/BeyondCode";
 import Contact from "@/components/sections/Contact";
 
+/**
+ * Home page — Server Component.
+ *
+ * The PortraitCanvas lives in layout.tsx so it persists across all sections
+ * without ever re-mounting. This file simply composes the sections.
+ */
 export default function Home() {
   return (
     <>

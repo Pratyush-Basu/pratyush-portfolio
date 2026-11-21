@@ -1,45 +1,41 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import Image from "next/image";
+/**
+ * Hero — Homepage hero section.
+ *
+ * The PortraitCanvas (in layout.tsx) renders full-screen behind everything.
+ * This component overlays text on the LEFT half; the right half stays open
+ * so the portrait is unobstructed. The left vignette in globals.css ensures
+ * text remains readable even with the portrait behind it.
+ */
+
 import { motion } from "motion/react";
 import { ArrowDown, Download } from "lucide-react";
 import Button from "@/components/ui/Button";
-import { assets, heroStats, profile } from "@/data/profile";
-import { useMediaQuery } from "@/hooks/useMediaQuery";
-import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
-
-const HeroScene = dynamic(() => import("@/components/three/HeroScene"), {
-  ssr: false,
-  loading: () => (
-    <div className="flex h-full items-center justify-center">
-      <div className="relative h-64 w-full max-w-md overflow-hidden rounded-2xl">
-        <Image
-          src={assets.heroPortrait}
-          alt={profile.name}
-          fill
-          className="object-cover"
-          priority
-          sizes="(max-width: 768px) 100vw, 40vw"
-        />
-      </div>
-    </div>
-  ),
-});
+import { heroStats, profile } from "@/data/profile";
 
 export default function Hero() {
-  const isMobile = useMediaQuery("(max-width: 768px)");
-  const prefersReducedMotion = usePrefersReducedMotion();
-  const useLightweightVisual = isMobile || prefersReducedMotion;
-
   return (
     <section
       id="home"
       className="relative min-h-screen overflow-hidden pt-20"
     >
-      <div className="pointer-events-none absolute inset-0 bg-hero-aurora" aria-hidden />
+      {/* Aurora colour accent — blends over canvas without hiding portrait */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: [
+            "radial-gradient(55% 65% at 0% 30%, rgba(124,92,255,0.20) 0%, transparent 60%)",
+            "radial-gradient(35% 45% at 5% 80%, rgba(59,130,246,0.12) 0%, transparent 55%)",
+          ].join(","),
+        }}
+        aria-hidden
+      />
 
+      {/* Two-column grid: text LEFT, transparent RIGHT */}
       <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 pb-20 pt-10 sm:px-6 lg:grid-cols-2 lg:gap-8 lg:px-8 lg:pb-28 lg:pt-16">
+
+        {/* ── LEFT: Text ─────────────────────────────────────────────────── */}
         <div>
           <motion.p
             initial={{ opacity: 0, y: 14 }}
@@ -63,7 +59,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, delay: 0.12 }}
-            className="mt-5 max-w-xl text-base leading-relaxed text-white/65 sm:text-lg"
+            className="mt-5 max-w-xl text-base leading-relaxed text-white/70 sm:text-lg"
           >
             {profile.summary}
           </motion.p>
@@ -100,37 +96,21 @@ export default function Hero() {
           </motion.dl>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.15 }}
-          className="relative h-[380px] w-full sm:h-[460px] lg:h-[540px]"
-        >
-          {useLightweightVisual ? (
-            <div className="relative mx-auto h-full max-w-lg overflow-hidden rounded-[2rem] border border-white/10 shadow-glow">
-              <Image
-                src={assets.heroPortrait}
-                alt={`Portrait of ${profile.name}`}
-                fill
-                priority
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 42vw"
-              />
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#070a14]/50 to-transparent" />
-            </div>
-          ) : (
-            <HeroScene />
-          )}
-        </motion.div>
+        {/* ── RIGHT: Empty — portrait shows through ─────────────────────── */}
+        <div className="hidden lg:block" aria-hidden />
       </div>
 
-      <a
+      {/* Scroll cue */}
+      <motion.a
         href="#about"
-        className="absolute bottom-6 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2 text-xs text-white/45 hover:text-white/80"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.2, duration: 0.6 }}
+        className="absolute bottom-6 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2 text-xs text-white/50 transition hover:text-white/80"
       >
         <span>Scroll</span>
         <ArrowDown className="h-4 w-4 animate-bounce" />
-      </a>
+      </motion.a>
     </section>
   );
 }

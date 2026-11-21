@@ -11,7 +11,9 @@ export default function About() {
   const ref = useGsapReveal<HTMLElement>();
 
   return (
-    <section id="about" ref={ref} className="scroll-mt-24 py-20 sm:py-28">
+    <section id="about" ref={ref} className="relative scroll-mt-24 py-20 sm:py-28">
+      {/* Section backdrop — darkens the portrait canvas behind this section */}
+      <div className="absolute inset-0 -z-[1] bg-[#05070f]/35" aria-hidden />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading eyebrow="About" title="A Little About Me" />
 

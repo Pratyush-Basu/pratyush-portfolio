@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 360" fill="none">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="800" y2="360">
+      <stop stop-color="#1e3a8a"/>
+      <stop offset="1" stop-color="#312e81"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="360" fill="url(#g)"/>
+  <circle cx="180" cy="180" r="28" fill="#93c5fd"/>
+  <circle cx="400" cy="120" r="28" fill="#a5b4fc"/>
+  <circle cx="620" cy="200" r="28" fill="#67e8f9"/>
+  <path d="M208 180h164M428 132l164 56" stroke="#bfdbfe" stroke-width="4"/>
+  <path d="M90 250h620" stroke="#60a5fa" stroke-width="2" opacity=".4"/>
+  <text x="48" y="56" fill="#e0e7ff" font-family="sans-serif" font-size="28" font-weight="700">Multi-Agent Travel</text>
+</svg>
