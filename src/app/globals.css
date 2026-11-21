@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #05070f;
+  --bg-elevated: #0b1020;
+  --text: #f4f6ff;
+  --muted: rgba(244, 246, 255, 0.62);
+  --violet: #8b5cf6;
+  --violet-soft: #a78bfa;
+  --electric-blue: #3b82f6;
+  --glow: 0 0 40px rgba(124, 92, 255, 0.35);
+  --hero-aurora:
+    radial-gradient(80% 60% at 15% 20%, rgba(124, 92, 255, 0.22), transparent 55%),
+    radial-gradient(70% 50% at 85% 15%, rgba(59, 130, 246, 0.18), transparent 50%),
+    radial-gradient(60% 50% at 50% 100%, rgba(167, 139, 250, 0.12), transparent 55%),
+    linear-gradient(180deg, #05070f 0%, #080d1a 45%, #05070f 100%);
+}
+
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--text);
+  --color-violet: var(--violet);
+  --color-violet-soft: var(--violet-soft);
+  --color-electric-blue: var(--electric-blue);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+  --background-image-hero-aurora: var(--hero-aurora);
+  --shadow-glow: var(--glow);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body), ui-sans-serif, sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-display), ui-serif, Georgia, serif;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--violet) 45%, transparent);
+}
+
+@keyframes orb-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.06);
+    filter: brightness(1.12);
+  }
+}
+
+.animate-orb-breathe {
+  animation: orb-breathe 2.8s ease-in-out infinite;
+}
+
+@keyframes waveform {
+  0%,
+  100% {
+    height: 4px;
+  }
+  50% {
+    height: 14px;
+  }
+}
+
+.waveform-bar {
+  height: 4px;
+  animation: waveform 0.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .animate-orb-breathe,
+  .waveform-bar,
+  .animate-bounce {
+    animation: none !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
