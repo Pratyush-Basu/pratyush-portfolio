@@ -14,13 +14,12 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const TOTAL = 238;
 const LAST = TOTAL - 1;
-const PATH = "/person-video-img/ezgif-frame-";
+const PATH = "/images/portrait/sequence-webp/ezgif-frame-";
 const BACKGROUND_OPACITY = 0.22;
 
 const MAX_CONCURRENT = 3;
@@ -30,7 +29,7 @@ const BEHIND = 6;
 const MAX_CACHED = 36;
 
 function src(frameNumber1: number): string {
-  return `${PATH}${String(frameNumber1).padStart(3, "0")}.png`;
+  return `${PATH}${String(frameNumber1).padStart(3, "0")}.webp`;
 }
 
 function frameFromProgress(progress: number): number {
@@ -254,11 +253,6 @@ export default function PortraitCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const frameRef = useRef(0);
   const triggersRef = useRef<ScrollTrigger[]>([]);
-  const tweenRef = useRef<gsap.core.Tween | null>(null);
-  const prefersReducedMotion = usePrefersReducedMotion();
-  console.log("[PortraitCanvas] mounted", {
-    prefersReducedMotion,
-  });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -298,58 +292,48 @@ export default function PortraitCanvas() {
     loader.boot();
     loader.prefetch(0, 1);
 
-    if (prefersReducedMotion) {
-      if (container) gsap.set(container, { opacity: 1 });
-      return () => {
-        window.removeEventListener("resize", resize);
-        loader.dispose();
-      };
-    }
+    /*
+     * The frame sequence is a 1:1 mapping of the user's own scroll position
+     * (no autoplay, no smoothing, no parallax), so it is NOT gated on
+     * prefers-reduced-motion. Only the eased opacity fade is simplified
+     * for reduced-motion users. Read once here so a late change of the
+     * media query never tears down and rebuilds the sequence trigger.
+     */
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
 
-    
-let lastIndex = 0;
+    let lastIndex = 0;
 
-const applyFrame = (progress: number) => {
-  const next = frameFromProgress(progress);
-  const direction = next - lastIndex;
+    const applyFrame = (progress: number) => {
+      const next = frameFromProgress(progress);
+      const direction = next - lastIndex;
 
-  lastIndex = next;
-  frameRef.current = next;
+      lastIndex = next;
+      frameRef.current = next;
 
-  loader.prefetch(next, direction);
+      loader.prefetch(next, direction);
 
-  const ready = loader.getDecoded(next);
+      const ready = loader.getDecoded(next);
+      if (ready) drawImage(cv, ready);
+    };
 
-  if (ready) {
-    drawImage(cv, ready);
-  }
-};
-
+    /*
+     * Progress is measured against the real scroll range of the window,
+     * re-evaluated on every refresh. Using documentElement as the trigger
+     * with end:"max" measured the range once at creation; <html> is h-full
+     * here, so any later layout growth (fonts, images, lazy sections) left
+     * a stale, too-short range and progress hit 1 early.
+     */
     const sequenceTrigger = ScrollTrigger.create({
-      trigger: document.documentElement,
-      start: "top top",
-      end: "max",
+      start: 0,
+      end: () => ScrollTrigger.maxScroll(window),
       invalidateOnRefresh: true,
-
-      onUpdate(self) {
-        console.log(
-          "[Sequence Scroll]",
-          self.progress,
-          frameFromProgress(self.progress)
-        );
-
-        applyFrame(self.progress);
-      },
-
-      onRefresh(self) {
-        applyFrame(self.progress);
-      },
+      onUpdate: (self) => applyFrame(self.progress),
+      onRefresh: (self) => applyFrame(self.progress),
     });
-
     triggersRef.current.push(sequenceTrigger);
-
     applyFrame(sequenceTrigger.progress);
-
 
     if (container) {
       gsap.set(container, { opacity: 1 });
@@ -359,7 +343,7 @@ const applyFrame = (progress: number) => {
           trigger: home,
           start: "bottom 85%",
           end: "bottom 10%",
-          scrub: 1.2,
+          scrub: reduceMotion ? true : 1.2,
           onUpdate(self) {
             gsap.set(container, {
               opacity: 1 - self.progress * (1 - BACKGROUND_OPACITY),
@@ -370,6 +354,25 @@ const applyFrame = (progress: number) => {
       }
     }
 
+    /*
+     * Keep the scroll range in sync with the document height. ScrollTrigger
+     * only auto-refreshes on window resize/load, not when content grows.
+     */
+    let refreshRaf = 0;
+    let lastHeight = document.documentElement.scrollHeight;
+    const scheduleRefresh = () => {
+      cancelAnimationFrame(refreshRaf);
+      refreshRaf = requestAnimationFrame(() => {
+        const h = document.documentElement.scrollHeight;
+        if (h === lastHeight) return;
+        lastHeight = h;
+        ScrollTrigger.refresh();
+      });
+    };
+    const resizeObserver = new ResizeObserver(scheduleRefresh);
+    resizeObserver.observe(document.body);
+    void document.fonts?.ready.then(scheduleRefresh);
+
     const refresh = () => ScrollTrigger.refresh();
     window.addEventListener("load", refresh);
     const refreshTimers = [150, 600, 1500].map((ms) =>
@@ -377,6 +380,8 @@ const applyFrame = (progress: number) => {
     );
 
     return () => {
+      resizeObserver.disconnect();
+      cancelAnimationFrame(refreshRaf);
       window.removeEventListener("resize", resize);
       window.removeEventListener("load", refresh);
       refreshTimers.forEach((id) => window.clearTimeout(id));
@@ -384,7 +389,7 @@ const applyFrame = (progress: number) => {
       triggersRef.current = [];
       loader.dispose();
     };
-  }, [prefersReducedMotion]);
+  }, []);
 
   return (
     <div ref={containerRef} className="portrait-canvas-container" aria-hidden>
