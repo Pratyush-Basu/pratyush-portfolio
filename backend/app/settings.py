@@ -1,13 +1,17 @@
 import os
 from functools import lru_cache
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 class Settings:
     def __init__(self) -> None:
         self.openrouter_api_key = os.getenv("OPENROUTER_API_KEY", "")
         self.openrouter_model = os.getenv(
             "OPENROUTER_MODEL",
-            "openai/gpt-4o-mini",
+            "google/gemma-4-26b-a4b-it:free",
         )
         origins = os.getenv(
             "CORS_ORIGINS",
