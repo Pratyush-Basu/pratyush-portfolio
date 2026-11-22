@@ -19,7 +19,8 @@ export const profile = {
   focusAreas: [
     "Generative AI & LLMs",
     "Agentic AI workflows",
-    "Machine Learning & Computer Vision",
+    "Machine Learning & Deep Learning",
+    "NLP & Computer Vision",
     "FastAPI & backend systems",
     "RAG & AI product MVPs",
   ],
@@ -29,7 +30,7 @@ export const profile = {
     "Leading and participating in hackathons including Hackspire, Hackthonix and Smart India Hackathon internal selection.",
   ],
   email: "basupratyush76@gmail.com",
-  resumePath: "/resume/Pratyush_Basu_Resume.pdf",
+  resumePath: "/resume/Pratyush__Basu__CV.pdf",
   tagline: "AI/ML Engineer building intelligent, practical systems.",
 } as const;
 
@@ -63,15 +64,15 @@ export const navLinks: NavLink[] = [
 
 /** Verified counts only — derived from listed portfolio content. */
 export const heroStats: StatItem[] = [
-  { label: "AI/ML Projects", value: "6" },
-  { label: "Professional Internships", value: "2" },
-  { label: "Technical Domains", value: "6" },
+  { label: "AI/ML Projects", value: "20+" },
+  { label: "Organizations Worked With", value: "3" },
+  { label: "Technologies & Tools", value: "40+" },
 ];
 
 export const assets = {
   heroPortrait: "/images/portrait/hero-still-80.png",
   heroPortraitAlt: "/images/portrait/hero-still-120.png",
-  aboutPortrait: "/images/portrait/about-portrait.png",
+  aboutPortrait: "/images/portrait/about-picture.png",
   sequenceBase: "/images/portrait/sequence",
   sequenceCount: 24,
   /** Full original sequence via junction (local); prefer sampled sequence in production. */

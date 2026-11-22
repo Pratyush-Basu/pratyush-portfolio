@@ -33,21 +33,28 @@ export const achievements: Achievement[] = [
     description: "Participated as Team Leader.",
   },
   {
-    id: "hackthonix",
-    title: "Hackthonix",
-    description: "GenAI Ed-Tech project.",
+    id: "SparkHack",
+    title: "SparkHack Hackathon (2025)",
+    description: "Finalist (Top 10).",
+  },
+  {
+    id: "FrostHack",
+    title: "FrostHack S01 (2025)",
+    description: "Finalist (Top 8).",
   },
   {
     id: "sih",
     title: "Smart India Hackathon",
-    description: "Internal selection, 2024.",
+    description: "Internal selection, 2023 & 2024.",
   },
 ];
 
 export const certifications = [
-  "HackTropica",
   "Deep Learning, Generative AI and Prompt Engineering",
-  "FIEM Certified SIH Internal Hackathon Participation Certificate",
+  "DS,AI,ML using Python",
   "PWskills certified DSA with C++",
+  "SIH Internal Hackathon Participation Certificate",
+  "HackTropica",
+  "Hackspire",
   "Certificate of completion: Introduction to agent skills",
 ] as const;

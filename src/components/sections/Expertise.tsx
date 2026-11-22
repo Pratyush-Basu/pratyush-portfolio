@@ -1,95 +1,73 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
+import { AnimatePresence, motion, type Variants } from "motion/react";
 import {
   Brain,
-  Sparkles,
-  Server,
-  Database,
-  Code2,
   Cloud,
+  Code2,
+  Database,
+  Server,
+  Sparkles,
+  type LucideIcon,
 } from "lucide-react";
 import SectionHeading from "@/components/ui/SectionHeading";
+import SpotlightCard from "@/components/ui/SpotlightCard";
+import SkillLogo, { brandRgba } from "@/components/ui/SkillLogo";
+import { Reveal } from "@/components/ui/Reveal";
 import { skillCategories } from "@/data/skills";
-import { useGsapReveal } from "@/hooks/useGsapReveal";
 import { cn } from "@/lib/utils";
 
-/** Map category id → lucide icon + accent colour */
 const CATEGORY_META: Record<
   string,
-  { icon: React.ComponentType<{ className?: string }>; accent: string }
+  { icon: LucideIcon; accent: string; blurb: string }
 > = {
   "ai-ml": {
     icon: Brain,
-    accent: "text-violet-400",
+    accent: "text-violet-300",
+    blurb: "Models, vision and experimentation.",
   },
   genai: {
     icon: Sparkles,
-    accent: "text-fuchsia-400",
+    accent: "text-fuchsia-300",
+    blurb: "LLM applications and agent workflows.",
   },
   backend: {
     icon: Server,
-    accent: "text-sky-400",
+    accent: "text-sky-300",
+    blurb: "APIs and services that serve intelligence.",
   },
   databases: {
     icon: Database,
-    accent: "text-emerald-400",
+    accent: "text-emerald-300",
+    blurb: "Storage for structured, document and vector data.",
   },
   frontend: {
     icon: Code2,
-    accent: "text-orange-400",
+    accent: "text-orange-300",
+    blurb: "Interfaces for AI-powered products.",
   },
   cloud: {
     icon: Cloud,
-    accent: "text-cyan-400",
+    accent: "text-cyan-300",
+    blurb: "Shipping, tracking and deploying models.",
   },
 };
 
-/** Map individual skill name → emoji icon */
-const SKILL_ICON: Record<string, string> = {
-  Python: "🐍",
-  TensorFlow: "🧠",
-  Keras: "🔴",
-  PyTorch: "🔥",
-  "Scikit-learn": "📊",
-  OpenCV: "👁️",
-  YOLO: "🎯",
-  "Computer Vision": "🔭",
-  "Deep Learning": "🤖",
-  "Large Language Models": "💬",
-  RAG: "🔍",
-  LangChain: "⛓️",
-  LangGraph: "🕸️",
-  CrewAI: "👥",
-  "Hugging Face Transformers": "🤗",
-  "Prompt Engineering": "✍️",
-  Ollama: "🦙",
-  "Multi-Agent Systems": "🤝",
-  FastAPI: "⚡",
-  Flask: "🧪",
-  "REST APIs": "🔗",
-  SQLAlchemy: "🗄️",
-  "API Integration": "🔌",
-  "Database Design": "📐",
-  PostgreSQL: "🐘",
-  MySQL: "🐬",
-  MongoDB: "🍃",
-  Firebase: "🔥",
-  SQLite: "📦",
-  "Vector Databases": "🔢",
-  HTML: "🌐",
-  CSS: "🎨",
-  JavaScript: "🟡",
-  React: "⚛️",
-  "Next.js": "▲",
-  "Tailwind CSS": "💨",
-  Git: "🌿",
-  GitHub: "🐙",
-  Docker: "🐳",
-  MLflow: "📈",
-  DVC: "📂",
-  AWS: "☁️",
-  Vercel: "▲",
+const panelVariants: Variants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.05, duration: 0.2 } },
+  exit: { opacity: 0, transition: { duration: 0.15 } },
+};
+
+const tileVariants: Variants = {
+  hidden: { opacity: 0, y: 16, scale: 0.96 },
+  show: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.4, ease: "easeOut" },
+  },
 };
 
 export default function Expertise() {
@@ -97,16 +75,11 @@ export default function Expertise() {
   const active =
     skillCategories.find((category) => category.id === activeId) ??
     skillCategories[0];
-  const ref = useGsapReveal<HTMLElement>();
-
-  const activeMeta = CATEGORY_META[activeId] ?? {
-    icon: Brain,
-    accent: "text-violet-400",
-  };
-  const ActiveIcon = activeMeta.icon;
+  const meta = CATEGORY_META[active.id] ?? CATEGORY_META["ai-ml"];
+  const ActiveIcon = meta.icon;
 
   return (
-    <section id="expertise" ref={ref} className="relative scroll-mt-24 py-20 sm:py-28">
+    <section id="expertise" className="relative scroll-mt-24 py-20 sm:py-28">
       <div className="absolute inset-0 -z-[1] bg-[#05070f]/35" aria-hidden />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading
@@ -115,81 +88,121 @@ export default function Expertise() {
           description="Interactive skill categories spanning AI/ML, Generative AI, backend systems and deployment tooling."
         />
 
-        <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-          {/* ── Sidebar tabs ───────────────────────────── */}
-          <div className="flex flex-row gap-2 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0">
+        <Reveal className="grid gap-6 lg:grid-cols-[300px_1fr]">
+          {/* ── Category tabs ─────────────────────────── */}
+          <div
+            role="tablist"
+            aria-label="Skill categories"
+            className="flex flex-row gap-2 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0"
+          >
             {skillCategories.map((category) => {
-              const meta = CATEGORY_META[category.id];
-              const Icon = meta?.icon ?? Brain;
+              const item = CATEGORY_META[category.id] ?? CATEGORY_META["ai-ml"];
+              const Icon = item.icon;
+              const isActive = category.id === active.id;
               return (
                 <button
                   key={category.id}
                   type="button"
+                  role="tab"
+                  aria-selected={isActive}
                   onClick={() => setActiveId(category.id)}
                   className={cn(
-                    "flex items-center gap-3 whitespace-nowrap rounded-xl border px-4 py-3 text-left text-sm transition duration-200",
-                    activeId === category.id
-                      ? "border-violet-400/40 bg-violet-500/15 text-white"
-                      : "border-white/10 bg-white/[0.02] text-white/60 hover:text-white hover:border-white/20",
+                    "group relative flex shrink-0 items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm transition-colors duration-200",
+                    isActive
+                      ? "border-transparent text-white"
+                      : "border-white/10 bg-white/[0.02] text-white/60 hover:border-white/25 hover:bg-white/[0.05] hover:text-white",
                   )}
                 >
+                  {isActive ? (
+                    <motion.span
+                      layoutId="expertise-active-tab"
+                      aria-hidden
+                      className="absolute inset-0 rounded-xl border border-violet-400/50 bg-gradient-to-r from-violet-500/25 to-electric-blue/15 shadow-[0_0_30px_rgba(139,92,246,0.25)]"
+                      transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                    />
+                  ) : null}
                   <Icon
                     className={cn(
-                      "h-4 w-4 shrink-0",
-                      activeId === category.id
-                        ? (meta?.accent ?? "text-violet-400")
-                        : "text-white/40",
+                      "relative h-4 w-4 shrink-0 transition-transform duration-200 group-hover:scale-110",
+                      isActive ? item.accent : "text-white/40",
                     )}
                   />
-                  {category.title}
+                  <span className="relative flex-1 whitespace-nowrap lg:whitespace-normal">
+                    {category.title}
+                  </span>
+                  <span
+                    className={cn(
+                      "relative rounded-full px-2 py-0.5 text-[11px] tabular-nums",
+                      isActive
+                        ? "bg-white/15 text-white"
+                        : "bg-white/5 text-white/40",
+                    )}
+                  >
+                    {category.skills.length}
+                  </span>
                 </button>
               );
             })}
           </div>
 
-          {/* ── Skill grid panel ───────────────────────── */}
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-md sm:p-8">
-            {/* Panel heading with icon */}
-            <div className="mb-6 flex items-center gap-3">
+          {/* ── Skill panel ───────────────────────────── */}
+          <SpotlightCard className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-md sm:p-8">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-violet-500/15 blur-3xl"
+            />
+
+            <div className="relative mb-7 flex flex-wrap items-center gap-4">
               <div
                 className={cn(
-                  "flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.05]",
-                  activeMeta.accent,
+                  "flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06]",
+                  meta.accent,
                 )}
               >
-                <ActiveIcon className="h-5 w-5" />
+                <ActiveIcon className="h-6 w-6" />
               </div>
-              <h3 className="font-display text-2xl text-white">
-                {active.title}
-              </h3>
+              <div className="min-w-0 flex-1">
+                <h3 className="font-display text-2xl text-white">
+                  {active.title}
+                </h3>
+                <p className="mt-1 text-sm text-white/55">{meta.blurb}</p>
+              </div>
+              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/60">
+                {active.skills.length} technologies
+              </span>
             </div>
 
-            <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {active.skills.map((skill) => {
-                const emoji = SKILL_ICON[skill];
-                return (
-                  <li
-                    key={skill}
-                    className="flex items-center gap-3 rounded-xl border border-white/10 bg-[#0b1020]/70 px-4 py-3 text-sm text-white/75 transition duration-200 hover:border-electric-blue/40 hover:text-white hover:bg-white/[0.06]"
-                  >
-                    {emoji ? (
-                      <span
-                        className="text-lg leading-none"
-                        role="img"
-                        aria-hidden
-                      >
-                        {emoji}
+            <AnimatePresence mode="wait">
+              <motion.ul
+                key={active.id}
+                variants={panelVariants}
+                initial="hidden"
+                animate="show"
+                exit="exit"
+                className="relative grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+              >
+                {active.skills.map((skill) => (
+                  <motion.li key={skill} variants={tileVariants}>
+                    <SpotlightCard
+                      className="group flex items-center gap-3 rounded-xl border border-white/10 bg-[#0b1020]/70 px-3.5 py-3 text-sm text-white/80 transition duration-300 hover:-translate-y-1 hover:text-white"
+                      style={
+                        {
+                          "--spot": brandRgba(skill, 0.2),
+                          "--spot-border": brandRgba(skill, 0.85),
+                        } as CSSProperties
+                      }
+                    >
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.06] transition duration-300 group-hover:scale-110 group-hover:border-white/20 group-hover:bg-white/10">
+                        <SkillLogo name={skill} size={22} />
                       </span>
-                    ) : (
-                      <span className="h-4 w-4 rounded-full border border-white/20 bg-white/10" />
-                    )}
-                    {skill}
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        </div>
+                      <span className="leading-snug">{skill}</span>
+                    </SpotlightCard>
+                  </motion.li>
+                ))}
+              </motion.ul>
+            </AnimatePresence>
+          </SpotlightCard>
+        </Reveal>
       </div>
     </section>
   );

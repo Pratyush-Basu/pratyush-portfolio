@@ -9,6 +9,7 @@ export const experience: ExperienceItem[] = [
     period: "September 2026 — Present",
     highlights: [
       "Strengthening software engineering and backend development skills with a focus on Python, FastAPI, LLM-integrated applications and production-oriented AI system development.",
+      "Working on LiteLLM Gateway provisioning and integration, implementing user management, API key provisioning, database mapping and backend workflows.",
       "Working across API engineering, database operations and practical software delivery.",
       "Exploring RAG, Agentic AI workflows and scalable AI architectures through hands-on engineering.",
     ],
@@ -17,7 +18,7 @@ export const experience: ExperienceItem[] = [
     id: "sensegrid",
     company: "SenseGrid AI Systems Pvt. Ltd.",
     role: "AI/ML Intern",
-    location: "Kannur, Kerala, India",
+    location: "Kannur, Kerala, India (Remote)",
     period: "February 2026 — April 2026",
     highlights: [
       "Worked on end-to-end AI system development including planning, design, development and testing.",

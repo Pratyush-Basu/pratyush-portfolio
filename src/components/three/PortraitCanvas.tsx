@@ -230,6 +230,19 @@ function createLoader(options: LoaderOptions) {
   return { prefetch, getDecoded, boot, dispose };
 }
 
+/*
+ * Subject placement on wide (desktop) viewports. The subject sits in the
+ * horizontal centre of every frame, which would put the face under the hero
+ * text column. On wide screens the frame is zoomed slightly and shifted so the
+ * subject lands in the right half; the exposed left strip is filled by
+ * stretching the frame's left edge column, so no seam is visible.
+ * Narrow / portrait viewports keep the original centred cover fit.
+ */
+const WIDE_MIN_ASPECT = 1.3;
+const WIDE_ZOOM = 1.12;
+const SUBJECT_X = 0.66; // subject centre, as a fraction of canvas width
+const SUBJECT_CENTRE_IN_FRAME = 0.52;
+
 function drawImage(canvas: HTMLCanvasElement, img: HTMLImageElement): boolean {
   const ctx = canvas.getContext("2d", { alpha: false });
   if (!ctx || img.naturalWidth === 0) return false;
@@ -238,11 +251,35 @@ function drawImage(canvas: HTMLCanvasElement, img: HTMLImageElement): boolean {
   const ch = canvas.height;
   if (cw === 0 || ch === 0) return false;
 
-  const scale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
+  const wide = cw / ch >= WIDE_MIN_ASPECT;
+  const scale =
+    Math.max(cw / img.naturalWidth, ch / img.naturalHeight) *
+    (wide ? WIDE_ZOOM : 1);
   const dw = img.naturalWidth * scale;
   const dh = img.naturalHeight * scale;
-  const dx = (cw - dw) / 2;
+  const dx = wide
+    ? cw * SUBJECT_X - dw * SUBJECT_CENTRE_IN_FRAME
+    : (cw - dw) / 2;
   const dy = (ch - dh) * 0.3;
+
+  if (dx > 0) {
+    // Extend the left edge of the frame into the exposed strip.
+    ctx.drawImage(img, 0, 0, 1, img.naturalHeight, 0, dy, Math.ceil(dx) + 1, dh);
+  }
+  if (dx + dw < cw) {
+    // Same on the right if the frame ever falls short of the canvas.
+    ctx.drawImage(
+      img,
+      img.naturalWidth - 1,
+      0,
+      1,
+      img.naturalHeight,
+      dx + dw - 1,
+      dy,
+      cw - (dx + dw) + 1,
+      dh,
+    );
+  }
 
   ctx.drawImage(img, dx, dy, dw, dh);
   return true;

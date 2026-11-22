@@ -52,9 +52,20 @@ body {
 
 /* ─── PortraitCanvas layer ───────────────────────────────────────────────── */
 
+:root {
+  /* Page background as bare channels so overlays can vary only the alpha. */
+  --bg-rgb: 5, 7, 15;
+}
+
 /*
  * Fixed z-0 container. Covers the full viewport at all times.
  * All foreground content sits at z-10 in layout.tsx.
+ *
+ * - background: matches the page while the first frame is still loading,
+ *   instead of the canvas showing a black flash.
+ * - contain: the layer is fixed and fully sized by `inset`, so its layout and
+ *   paint can't affect (or be affected by) the rest of the page.
+ * - will-change: GSAP fades this element's opacity on scroll.
  */
 .portrait-canvas-container {
   position: fixed;
@@ -62,9 +73,14 @@ body {
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
+  isolation: isolate;
+  contain: strict;
+  will-change: opacity;
+  background: var(--bg);
+  user-select: none;
 }
 
-/* The raw canvas fills the container */
+/* The raw canvas fills the container (JS sets the exact pixel size). */
 .portrait-canvas {
   position: absolute;
   inset: 0;
@@ -74,65 +90,275 @@ body {
 /*
  * ── Vignette system ──────────────────────────────────────────────────────
  *
- * Four overlapping gradient divs that together:
+ * Four overlapping layers that together:
  *   - Keep the left-side hero text readable (heavy left fade)
  *   - Protect the navbar area (top bar)
  *   - Ground the page at the footer (bottom bar)
  *   - Add cinematic depth (dark tint)
  *
- * On desktop the portrait fills the right half of the viewport so text
- * columns (left half) need aggressive darkening. On mobile the portrait is
- * centred, so the vignette is symmetric.
+ * Desktop (>= lg): the portrait fills the right half, so the left half
+ * (text column) is darkened aggressively.
+ * Below lg: the hero collapses to one full-width text column, so the left
+ * fade is replaced by an even, lighter side fade plus a stronger tint.
  */
-
-/* Left vignette: near-opaque left → transparent at ~55% */
-.portrait-vignette-left {
+.portrait-vignette-left,
+.portrait-vignette-top,
+.portrait-vignette-bottom,
+.portrait-tint {
   position: absolute;
   inset: 0;
   z-index: 1;
+  pointer-events: none;
+}
+
+/* Left vignette: near-opaque left → transparent at ~70% */
+.portrait-vignette-left {
   background: linear-gradient(
     to right,
-    rgba(5, 7, 15, 0.97) 0%,
-    rgba(5, 7, 15, 0.90) 18%,
-    rgba(5, 7, 15, 0.72) 32%,
-    rgba(5, 7, 15, 0.38) 46%,
-    rgba(5, 7, 15, 0.08) 58%,
+    rgba(var(--bg-rgb), 0.97) 0%,
+    rgba(var(--bg-rgb), 0.90) 18%,
+    rgba(var(--bg-rgb), 0.72) 32%,
+    rgba(var(--bg-rgb), 0.38) 46%,
+    rgba(var(--bg-rgb), 0.08) 58%,
     transparent 70%
   );
 }
 
 /* Top bar: protects navbar */
 .portrait-vignette-top {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
   background: linear-gradient(
     to bottom,
-    rgba(5, 7, 15, 1) 0%,
-    rgba(5, 7, 15, 0.70) 6%,
+    rgba(var(--bg-rgb), 1) 0%,
+    rgba(var(--bg-rgb), 0.70) 6%,
     transparent 18%
   );
 }
 
 /* Bottom bar: grounds page at footer */
 .portrait-vignette-bottom {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
   background: linear-gradient(
     to top,
-    rgba(5, 7, 15, 1) 0%,
-    rgba(5, 7, 15, 0.80) 8%,
+    rgba(var(--bg-rgb), 1) 0%,
+    rgba(var(--bg-rgb), 0.80) 8%,
     transparent 22%
   );
 }
 
 /* Global dark tint: cinematic depth over the portrait */
 .portrait-tint {
+  background: rgba(var(--bg-rgb), 0.38);
+}
+
+@media (max-width: 1023.98px) {
+  .portrait-vignette-left {
+    background: linear-gradient(
+      to right,
+      rgba(var(--bg-rgb), 0.55) 0%,
+      rgba(var(--bg-rgb), 0.20) 50%,
+      rgba(var(--bg-rgb), 0.55) 100%
+    );
+  }
+
+  .portrait-tint {
+    background: rgba(var(--bg-rgb), 0.50);
+  }
+}
+
+/* ─── Hero ───────────────────────────────────────────────────────────────── */
+
+/* Colour accent over the canvas; replaces the old inline style. */
+.hero-aurora {
   position: absolute;
   inset: 0;
-  z-index: 1;
-  background: rgba(5, 7, 15, 0.38);
+  pointer-events: none;
+  background:
+    radial-gradient(55% 65% at 0% 30%, rgba(124, 92, 255, 0.20) 0%, transparent 60%),
+    radial-gradient(35% 45% at 5% 80%, rgba(59, 130, 246, 0.12) 0%, transparent 55%);
+}
+
+/* Soft shadow keeps hero copy readable where it crosses bright frame areas. */
+.hero-copy {
+  text-shadow: 0 2px 24px rgba(var(--bg-rgb), 0.65);
+}
+
+/* In-flow, centred under the hero content; clears phone home indicators. */
+.scroll-cue {
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
+
+/* Short landscape screens: the cue would collide with the content. */
+@media (max-height: 560px) {
+  .scroll-cue { display: none; }
+}
+
+/* ─── About image frame ──────────────────────────────────────────────────── */
+
+/* Registered so the gradient angle itself can be animated. */
+@property --about-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes about-spin {
+  to { --about-angle: 360deg; }
+}
+
+/*
+ * 2px rotating violet→blue gradient ring around the image, plus a blurred
+ * copy of it behind as a soft glow. Browsers without @property support just
+ * show the static ring.
+ */
+.about-frame {
+  position: relative;
+  isolation: isolate;
+  padding: 2px;
+  border-radius: 2rem;
+  background: conic-gradient(
+    from var(--about-angle),
+    rgba(139, 92, 246, 0) 0deg,
+    rgba(139, 92, 246, 0.95) 70deg,
+    rgba(59, 130, 246, 0.95) 140deg,
+    rgba(139, 92, 246, 0) 220deg,
+    rgba(255, 255, 255, 0.10) 360deg
+  );
+  animation: about-spin 6s linear infinite;
+}
+
+.about-frame::before {
+  content: "";
+  position: absolute;
+  inset: -14px;
+  z-index: -1;
+  border-radius: calc(2rem + 14px);
+  background: inherit;
+  filter: blur(28px);
+  opacity: 0.4;
+  transition: opacity 0.5s ease;
+}
+
+.about-frame:hover::before {
+  opacity: 0.75;
+}
+
+/* ─── Spotlight cards ────────────────────────────────────────────────────── */
+
+/*
+ * Cursor-following glow + gradient ring. JS (SpotlightCard) only sets --mx and
+ * --my; --spot / --spot-border can be overridden per card for a brand tint.
+ */
+.spotlight {
+  position: relative;
+  isolation: isolate;
+}
+
+.spotlight::before,
+.spotlight::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.spotlight::before {
+  z-index: -1;
+  background: radial-gradient(
+    340px circle at var(--mx, 50%) var(--my, 50%),
+    var(--spot, rgba(139, 92, 246, 0.18)),
+    transparent 65%
+  );
+}
+
+.spotlight::after {
+  padding: 1px;
+  background: radial-gradient(
+    220px circle at var(--mx, 50%) var(--my, 50%),
+    var(--spot-border, rgba(167, 139, 250, 0.85)),
+    transparent 70%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.spotlight:hover::before,
+.spotlight:hover::after {
+  opacity: 1;
+}
+
+/* Diagonal light sweep across project banners on hover. */
+.card-shine {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.card-shine::before {
+  content: "";
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: -60%;
+  width: 40%;
+  transform: skewX(-20deg);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.22),
+    transparent
+  );
+  transition: left 0.9s ease;
+}
+
+.group:hover .card-shine::before {
+  left: 130%;
+}
+
+/* ─── Achievements card background ───────────────────────────────────────── */
+
+@keyframes orb-float-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(-30px, 24px) scale(1.15); }
+}
+
+@keyframes orb-float-b {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(28px, -22px) scale(1.2); }
+}
+
+.achievements-orb {
+  position: absolute;
+  z-index: -1;
+  border-radius: 9999px;
+  filter: blur(48px);
+  pointer-events: none;
+}
+
+.achievements-orb-a {
+  top: -60px;
+  right: -40px;
+  width: 220px;
+  height: 220px;
+  background: rgba(139, 92, 246, 0.28);
+  animation: orb-float-a 9s ease-in-out infinite;
+}
+
+.achievements-orb-b {
+  bottom: -70px;
+  left: -50px;
+  width: 240px;
+  height: 240px;
+  background: rgba(59, 130, 246, 0.22);
+  animation: orb-float-b 11s ease-in-out infinite;
 }
 
 /* ─── Orb breathe (voice UI) ─────────────────────────────────────────────── */
@@ -179,6 +405,5 @@ body {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
   }
 }

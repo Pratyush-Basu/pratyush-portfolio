@@ -50,3 +50,7 @@ backend/**/__pycache__/
 # large original Google Flow frame dump (keep locally; app uses sampled public copies)
 /person-video-img/
 /public/person-video-img/
+
+.venv/
+
+

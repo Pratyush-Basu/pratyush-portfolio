@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { X } from "lucide-react";
+import SkillLogo, { hasBrandLogo } from "@/components/ui/SkillLogo";
 import type { Project } from "@/types";
 
 type ProjectModalProps = {
@@ -82,8 +83,11 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
                   {project.technologies.map((tech) => (
                     <li
                       key={tech}
-                      className="rounded-full border border-white/10 px-2.5 py-1 text-xs text-violet-200"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-white/10 px-2.5 py-1 text-xs text-violet-200"
                     >
+                      {hasBrandLogo(tech) ? (
+                        <SkillLogo name={tech} size={14} brandOnly />
+                      ) : null}
                       {tech}
                     </li>
                   ))}
